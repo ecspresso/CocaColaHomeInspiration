@@ -27,7 +27,7 @@ hs_err_pid*
 replay_pid*
 
 # Properties
-*.properties
+conf.properties
 
 # Script files
 *.bat
