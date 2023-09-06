@@ -1,0 +1,140 @@
+@font-face {
+  font-family: 'Roboto';
+
+  src: url('Roboto-Bold.ttf') format('truetype');
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  border-radius: 4px;
+  font-family: "Tahoma", "Trebuchet MS", Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  background-color: #EDEFF4;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+h2,
+a.button,
+span.active,
+button {
+  text-align: center;
+  margin: 4px;
+  border: 4px solid orange;
+  display: inline-block;
+  padding: 4px;
+  background: orange;
+}
+
+a {
+  color: blue;
+}
+
+a.button,
+span.active,
+button {
+  font-weight: bold;
+  padding: 7px;
+  background-color: initial;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+  color: #FFFFFF;
+  pointer-events: auto;
+  text-align: center;
+  touch-action: manipulation;
+  user-select: none;
+  border: 0;
+  transition: box-shadow .2s;
+  vertical-align: top;
+}
+
+a.button,
+button {
+  cursor: pointer;
+  background-image: linear-gradient(-180deg, #FF7E31, #E62C03);
+  text-decoration: underline;
+}
+
+button {
+    background-image: linear-gradient(-180deg, #668dcb, #0c246d);
+}
+
+a:hover {
+  box-shadow: rgba(253, 76, 0, 0.5) 0 3px 8px;
+}
+
+span.active {
+  background-image: linear-gradient(-180deg, #449ff9, #003664);
+}
+
+table {
+  border-collapse: collapse;
+  border: 4px solid #EDEFF4;
+  background-color: white;
+}
+
+td {
+  border: 4px solid #EDEFF4;
+}
+
+.free {
+  background-color: #8AD755;
+}
+
+.booked {
+  background-color: #ED8D8D;
+}
+
+.unknown {
+  background-color: #449ff9;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
