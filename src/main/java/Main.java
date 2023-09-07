@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Logger logger = LoggerFactory.getLogger(Main.class);
         logger.info("---------------------------------------------------------------------------");
         logger.info("Start ny session.");
@@ -20,21 +20,19 @@ public class Main {
             logger.info("Läser in ftps.properties.");
             prop.load(fis);
         } catch (IOException e) {
-            logger.error("Kunde inte läsa in mejlinställningar.");
+            logger.error("Kunde inte läsa in conf.properties.");
             throw new RuntimeException(e);
         }
 
         String outputLocation = prop.getProperty("outputLocation", "./");
         String indexFolder = prop.getProperty("indexFolder", "./");
-        String indexTomorrowFolder = prop.getProperty("indexTomorrowFolder");
-        String indexInTwoDaysFolder = prop.getProperty("indexInTwoDaysFolder");
+        String localFileName = prop.getProperty("localFileName", "index.html");
+        String remoteFileName = prop.getProperty("remoteFileName", "index.html");
 
         if(!outputLocation.endsWith("/")) outputLocation = outputLocation + "/";
         if(!indexFolder.endsWith("/")) indexFolder = indexFolder + "/";
-        if(!indexTomorrowFolder.endsWith("/")) indexTomorrowFolder = indexTomorrowFolder + "/";
-        if(!indexInTwoDaysFolder.endsWith("/")) indexInTwoDaysFolder = indexInTwoDaysFolder + "/";
 
-        MAU mau = new MAU(prop.getProperty("template"), outputLocation);
+        MAU mau = new MAU(prop.getProperty("template"), localFileName, outputLocation);
         mau.run();
 
         FTPS ftps = new FTPS(prop);
@@ -52,10 +50,7 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        ftps.uploadFile(outputLocation+"indexToday.html", indexFolder, "index.html");
-        ftps.uploadFile(outputLocation+"indexTomorrow.html", indexTomorrowFolder, "index.html");
-        ftps.uploadFile(outputLocation+"indexInTwoDays.html", indexInTwoDaysFolder, "index.html");
-
+        ftps.uploadFile(outputLocation+localFileName, indexFolder, remoteFileName);
         ftps.close();
         logger.info("Avslutar programmet.");
     }

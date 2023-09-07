@@ -10,20 +10,37 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class RoomFinder {
     private final Logger logger = LoggerFactory.getLogger(RoomFinder.class);
-    private static RoomFinder roomFinder = null;
+    private static RoomFinder instance = null;
     private final ArrayList<Room> rooms = new ArrayList<>();
+    private final HashSet<String> buildings = new HashSet<>(8);
+
+    private RoomFinder() {
+    }
+
+    private static void init() {
+        if(instance == null) {
+            instance = new RoomFinder();
+            instance.findRooms();
+            instance.logger.info("Alla bokade rum: {}.", instance.rooms);
+        }
+    }
 
     public static synchronized ArrayList<Room> getRooms() {
-        if(roomFinder == null) {
-            roomFinder = new RoomFinder();
-            roomFinder.findRooms();
-            roomFinder.logger.info("Alla bokade rum: {}.", roomFinder.rooms);
-        }
-        return roomFinder.rooms;
+        init();
+        return instance.rooms;
+    }
+
+    public static List<String> getBuildings() {
+        init();
+        ArrayList<String> list = new ArrayList<>(instance.buildings);
+        Collections.sort(list);
+        return list;
     }
 
     private void findRooms() {
@@ -42,14 +59,14 @@ public class RoomFinder {
                 return;
             }
             List<HtmlTableRow> listOfRooms = page.getByXPath("//html/body/table/tbody/tr[td[contains(text(), 'Grupprum')] or td[contains(text(), 'Lärosal')]]");
-            // List<HtmlTableRow> listOfRooms = page.getByXPath("//html/body/table/tbody/tr[td[contains(text(), 'KL:3451')]]");
 
             for(HtmlTableRow room : listOfRooms) {
-                String name = room.getCell(1).getTextContent();
-                String type = room.getCell(2).getTextContent();
-                String seating = room.getCell(4).getTextContent();
-                String building = room.getCell(5).getTextContent();
+                String name = room.getCell(1).getTextContent().trim();
+                String type = room.getCell(2).getTextContent().trim();
+                String seating = room.getCell(4).getTextContent().trim();
+                String building = room.getCell(5).getTextContent().trim();
                 rooms.add(new Room(name, type, seating, building));
+                buildings.add(building);
                 logger.info("Lägger till rum {}.", name);
             }
         }

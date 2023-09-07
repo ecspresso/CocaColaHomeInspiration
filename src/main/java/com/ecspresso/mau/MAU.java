@@ -2,9 +2,9 @@ package com.ecspresso.mau;
 
 
 import com.ecspresso.mau.reservation.Schedule;
-import com.ecspresso.mau.reservation.time.Time;
 import com.ecspresso.mau.reservation.room.Room;
 import com.ecspresso.mau.reservation.room.RoomFinder;
+import com.ecspresso.mau.reservation.time.Time;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlNoBreak;
@@ -18,32 +18,26 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MAU {
     private final Logger logger = LoggerFactory.getLogger(MAU.class);
-    private final Schedule today = new Schedule();
-    private final Schedule tomorrow = new Schedule();
-    private final Schedule inTwoDays = new Schedule();
     private final String template;
     private final String outputLocation;
+    private final String htmlFileName;
 
-    public MAU(String template, @NotNull String outputLocation) {
+    public MAU(String template, String htmlFileName, @NotNull String outputLocation) {
         this.template = template;
         this.outputLocation = outputLocation;
+        this.htmlFileName = htmlFileName;
     }
 
     public void run() {
         logger.info("Letar efter bokade rum.");
-        LocalDate date = LocalDate.now();
-        findPrebookedRooms(today, "idag");
-        findPrebookedRooms(tomorrow, dateToString(date.plusDays(1)));
-        findPrebookedRooms(inTwoDays, dateToString(date.plusDays(2)));
+        Schedule schedule = new Schedule();
+        findPrebookedRooms(schedule);
 
         logger.info("Skapar tidstämplar.");
         LocalDateTime now = LocalDateTime.now();
@@ -57,21 +51,17 @@ public class MAU {
         timestamp.append(secondValue < 10 ? ":0" : ":").append(secondValue);
 
         logger.info("Skapar HTML filer.");
-        String span = "<span class=\"active\">€</span>";
-        createHtmlFiles(today, outputLocation+"indexToday.html", timestamp.toString(), "idag", "€1.+€", span.replace("€", "Idag"));
-        createHtmlFiles(tomorrow, outputLocation+"indexTomorrow.html", timestamp.toString(), date.plusDays(1), "€2.+€", span.replace("€", "Imorgon"));
-        createHtmlFiles(inTwoDays, outputLocation+"indexInTwoDays.html", timestamp.toString(), date.plusDays(2), "€3.+€", span.replace("€", "Om två dagar"));
+        createHtmlFiles(schedule, outputLocation+htmlFileName, timestamp.toString());
     }
 
-    private void findPrebookedRooms(Schedule map, String date) {
+    private void findPrebookedRooms(Schedule map) {
         for(Room room : RoomFinder.getRooms()) {
-            logger.info("Hämtar data för {} ({})", room, date);
-            String url = String.format("https://schema.mau.se/setup/jsp/Schema.jsp?startDatum=%s&intervallTyp=d&intervallAntal=1&resurser=l.%s", date, room);
-            updateMap(map, room, url, date);
+            String url = String.format("https://schema.mau.se/setup/jsp/Schema.jsp?startDatum=idag&intervallTyp=d&intervallAntal=1&resurser=l.%s", room);
+            updateMap(map, room, url);
         }
     }
 
-    private void updateMap(Schedule schedule, Room room, String url, String date) {
+    private void updateMap(Schedule schedule, Room room, String url) {
         try(final WebClient webClient = new WebClient(BrowserVersion.FIREFOX)) {
             webClient.getOptions().setJavaScriptEnabled(false);
             webClient.getOptions().setThrowExceptionOnScriptError(false);
@@ -100,14 +90,14 @@ public class MAU {
                     boolean s = time.getTime().isAfter(start) || time.getTime().equals(start);
                     boolean e = time.getTime().isBefore(end) || time.getTime().equals(end);
                     if(s && e) {
-                        setBooked(schedule, room, time, date, String.format("%s - %s", start, end));
+                        setBooked(schedule, room, time, String.format("%s - %s", start, end));
                     }
                 }
             }
         }
     }
 
-    private HtmlPage getPage(WebClient webClient, String url, int thisTry, int maxTries, Room room) throws IOException {
+    private HtmlPage getPage(@NotNull WebClient webClient, String url, int thisTry, int maxTries, @NotNull Room room) throws IOException {
         try {
             logger.info("Hämtar data för {} ({} av {}).", room.getName(), thisTry, maxTries);
             return webClient.getPage(url);
@@ -121,7 +111,6 @@ public class MAU {
         }
     }
 
-
     private void setUnknown(Schedule schedule, Room room) {
         for(Time time : Time.values()) {
             logger.warn("Sätter rum {} kl {} till okänd.", room, time);
@@ -129,29 +118,31 @@ public class MAU {
         }
     }
 
-    private void setBooked(Schedule schedule, @NotNull Room room, Time time, String date) {
-        logger.info("{} är reserverad kl {} {}.", room, time, date);
-        schedule.setBooked(room, time);
-    }
-
-    private void setBooked(Schedule schedule, @NotNull Room room, Time time, String date, String text) {
+    private void setBooked(@NotNull Schedule schedule, @NotNull Room room, Time time, String text) {
         // logger.info("{} är reserverad kl {} {}.", room, text, date);
         schedule.setBooked(room, time, text);
     }
 
-    private void createHtmlFiles(Schedule schedule, String outFileName, String timestamp, LocalDate date, String pattern, String replacement) {
-        createHtmlFiles(schedule, outFileName, timestamp, dateToString(date), pattern, replacement);
-    }
-
-    private void createHtmlFiles(Schedule schedule, String outFileName, String timestamp, String date, String pattern, String replacement) {
+    private void createHtmlFiles(Schedule schedule, String outFileName, String timestamp) {
         logger.info("Skapar {}.", outFileName);
+
+        StringBuilder buttons = new StringBuilder();
+        StringBuilder filterKeys = new StringBuilder();
+
+        for(String building: RoomFinder.getBuildings()) {
+            buttons.append(String.format("            <button onclick=\"toggleFilter(this, '%s')\">%s</button>", building, building)).append("\n");
+            filterKeys.append("\"").append(building).append("\",");
+        }
+
+        if(buttons.lastIndexOf("\n") != -1) buttons.deleteCharAt(buttons.lastIndexOf("\n"));
+        if(filterKeys.lastIndexOf(",") != -1) filterKeys.deleteCharAt(filterKeys.lastIndexOf(","));
 
         StringBuilder tr = new StringBuilder();
 
         for(Room room : RoomFinder.getRooms()) {
-            tr.append(String.format("            <tr%s>%s%n", room.getDataTags(), room.getHtmlString(date)));
+            tr.append(String.format("                <tr%s>%s%n", room.getDataTags(), room.getHtmlString("idag")));
             for(Time time : Time.values()) {
-                tr.append("                ");
+                tr.append("                    ");
                 if(schedule.isBooked(room, time) == -1) {
                     tr.append("<td class=\"unknown tooltip\"><span class=\"tooltiptext\">Unknown</span></td>");
                 } else if(schedule.isBooked(room, time) == 1) {
@@ -161,32 +152,23 @@ public class MAU {
                 }
                 tr.append("\n");
             }
-            tr.append("            </tr>\n");
+            tr.append("                </tr>\n");
         }
+        tr.deleteCharAt(tr.lastIndexOf("\n"));
+
+
 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(outFileName))) {
             byte[] template = Files.readAllBytes(Path.of(this.template));
             String index = new String(template);
 
-            Pattern regex = Pattern.compile(pattern);
-            Matcher matcher = regex.matcher(index);
-            index = matcher.replaceAll(replacement);
-            index = index.replace("€1", "");
-            index = index.replace("€2", "");
-            index = index.replace("€3", "");
-            index = index.replace("€", "");
+            index = index.replace("$filterKeys", filterKeys.toString());
+            index = index.replace("$filterButton", buttons.toString());
             index = index.replace("$datum", timestamp);
             index = index.replace("$tableRows", tr.toString());
             writer.write(index);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String dateToString(@NotNull LocalDate date) {
-        int y = date.getYear();
-        int m = date.getMonthValue();
-        int d = date.getDayOfMonth();
-        return String.format("%s-%s-%s", y, m, d);
     }
 }
