@@ -15,7 +15,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>kronoxskraparen.log</file>
+        <file>CocaColaHomeInspiration.log</file>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level [%file:%line] - %msg%n</pattern>
         </encoder>
