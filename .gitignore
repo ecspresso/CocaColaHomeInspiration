@@ -32,6 +32,7 @@ conf.properties
 
 # Script files
 *.bat
+*.sh
 
 # Generated HTML files
 index*.html

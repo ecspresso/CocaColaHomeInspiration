@@ -86,12 +86,20 @@ public class MAU {
                 LocalTime end = LocalTime.parse(timeTxt.getTextContent().substring(6, 11));
                 logger.info("Start: {} - End: {}", start, end);
 
-                for(Time time: Time.values()) {
-                    boolean s = time.getTime().isAfter(start) || time.getTime().equals(start);
-                    boolean e = time.getTime().isBefore(end) || time.getTime().equals(end);
-                    if(s && e) {
-                        setBooked(schedule, room, time, String.format("%s - %s", start, end));
-                    }
+                if(start.isBefore(Time.T1015.getTime())) {
+                    setBooked(schedule, room, Time.T0815, String.format("%s - %s", start, end));
+                }
+                if( Time.isOnBefore(start, Time.T1015, Time.T1315) || Time.isBetween(end, Time.T1015, Time.T1315) ) {
+                    setBooked(schedule, room, Time.T1015, String.format("%s - %s", start, end));
+                }
+                if(  Time.isOnBefore(start, Time.T1315, Time.T1515) || Time.isBetween(end, Time.T1315, Time.T1515) ) {
+                    setBooked(schedule, room, Time.T1315, String.format("%s - %s", start, end));
+                }
+                if( Time.isOnBefore(start, Time.T1515, Time.T1715) || Time.isBetween(end, Time.T1515, Time.T1715) ) {
+                    setBooked(schedule, room, Time.T1515, String.format("%s - %s", start, end));
+                }
+                if(end.isAfter(Time.T1715.getTime())) {
+                    setBooked(schedule, room, Time.T1715, String.format("%s - %s", start, end));
                 }
             }
         }
