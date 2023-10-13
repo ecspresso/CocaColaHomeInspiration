@@ -86,24 +86,49 @@ public class MAU {
                 LocalTime end = LocalTime.parse(timeTxt.getTextContent().substring(6, 11));
                 logger.info("Start: {} - End: {}", start, end);
 
-                if(start.isBefore(Time.T1015.getTime())) {
+                if (start.isBefore(Time.T1015.getTime())) {
                     setBooked(schedule, room, Time.T0815, String.format("%s - %s", start, end));
+
+                    Time[] times = {Time.T1015, Time.T1315, Time.T1515};
+
+                    for (Time time : times) {
+                        if (end.isAfter(time.getTime())) {
+                            setBooked(schedule, room, time, String.format("%s - %s", start, end));
+                        }
+                    }
                 }
-                if( Time.isOnBefore(start, Time.T1015, Time.T1315) || Time.isBetween(end, Time.T1015, Time.T1315) ) {
+
+                if (Time.T1015.isBefore(start) && start.isBefore(Time.T1315.getTime())) {
                     setBooked(schedule, room, Time.T1015, String.format("%s - %s", start, end));
+
+                    Time[] times = {Time.T1315, Time.T1515};
+
+                    for (Time time : times) {
+                        if (end.isAfter(time.getTime())) {
+                            setBooked(schedule, room, time, String.format("%s - %s", start, end));
+                        }
+                    }
                 }
-                if(  Time.isOnBefore(start, Time.T1315, Time.T1515) || Time.isBetween(end, Time.T1315, Time.T1515) ) {
+
+                if (Time.T1315.isBefore(start) && start.isBefore(Time.T1515.getTime())) {
                     setBooked(schedule, room, Time.T1315, String.format("%s - %s", start, end));
+
+                    if (end.isAfter(Time.T1515.getTime())) {
+                        setBooked(schedule, room, Time.T1515, String.format("%s - %s", start, end));
+                    }
                 }
-                if( Time.isOnBefore(start, Time.T1515, Time.T1715) || Time.isBetween(end, Time.T1515, Time.T1715) ) {
+
+                if (Time.T1515.isBefore(start) && start.isBefore(Time.T1715.getTime())) {
                     setBooked(schedule, room, Time.T1515, String.format("%s - %s", start, end));
                 }
-                if(end.isAfter(Time.T1715.getTime())) {
+
+                if (end.isAfter(Time.T1715.getTime())) {
                     setBooked(schedule, room, Time.T1715, String.format("%s - %s", start, end));
                 }
             }
         }
     }
+
 
     private HtmlPage getPage(@NotNull WebClient webClient, String url, int thisTry, int maxTries, @NotNull Room room) throws IOException {
         try {

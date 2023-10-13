@@ -49,16 +49,12 @@ public enum Time {
         }
     }
 
-    public static boolean isBetween(LocalTime time, Time t1, Time t2) {
-        return time.isAfter(t1.getTime()) && time.isBefore(t2.getTime());
+    public boolean isAfter(LocalTime time) {
+        return this.getTime().equals(time) || this.getTime().isAfter(time);
     }
 
-    public boolean isGreater(LocalTime time) {
-        return this.time.equals(time) || this.time.isBefore(time);
-    }
-
-    public static boolean isOnBefore(LocalTime time, Time start, Time end) {
-        return start.getTime().equals(time) || (start.getTime().isBefore(time) && time.isBefore(end.getTime()));
+    public boolean isBefore(LocalTime time) {
+        return this.getTime().equals(time) || this.getTime().isBefore(time);
     }
 
     public int getTimeslot() {
