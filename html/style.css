@@ -91,6 +91,12 @@ td {
     border: 4px solid #EDEFF4;
 }
 
+td:not(:first-child) {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 90px;
+}
+
 .free {
     background-color: #8AD755;
 }
@@ -105,11 +111,11 @@ td {
 
 .tooltip {
     position: relative;
+    text-align: center;
 }
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    /*width: 120px;*/
     background-color: #555;
     color: #fff;
     text-align: center;
@@ -117,11 +123,14 @@ td {
     padding: 5px 0;
     position: absolute;
     z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
+    bottom: 100%;
+    left: 25%;
     opacity: 0;
     transition: opacity 0.3s;
+}
+
+.booked.tooltip .tooltiptext {
+    left:16%;
 }
 
 .tooltip .tooltiptext::after {
@@ -135,8 +144,36 @@ td {
     border-color: #555 transparent transparent transparent;
 }
 
-.tooltip:hover .tooltiptext {
+.tooltip:hover .tooltiptext:not(h2),
+.old.tooltip:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
+    padding: 10px;
 }
 
+.old {
+    animation: 1s ease-in 0s infinite alternate blink;
+}
+
+.old .tooltiptext, .old .tooltiptext::after {
+      bottom: -140%;
+}
+
+.old .tooltiptext::after {
+    border-color: transparent transparent #555 transparent;
+    bottom: 100%;
+    top: -80%;
+}
+
+@keyframes blink {
+  from {
+    background-color: rgb(237, 141, 141);
+    border-color: rgb(237, 141, 141);
+    color: white;
+  }
+  to {
+    background-color: red;
+    border-color: red;
+    color: rgb(237, 141, 141);
+  }
+}

@@ -65,6 +65,7 @@ public class RoomFinder {
                 String type = room.getCell(2).getTextContent().trim();
                 String seating = room.getCell(4).getTextContent().trim();
                 String building = room.getCell(5).getTextContent().trim();
+                //if(!name.equals("NI:C0301")) continue;
                 rooms.add(new Room(name, type, seating, building));
                 buildings.add(building);
                 logger.info("Lägger till rum {}.", name);

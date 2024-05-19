@@ -57,6 +57,7 @@ public class MAU {
     private void findPrebookedRooms(Schedule map) {
         for(Room room : RoomFinder.getRooms()) {
             String url = String.format("https://schema.mau.se/setup/jsp/Schema.jsp?startDatum=idag&intervallTyp=d&intervallAntal=1&resurser=l.%s", room);
+            // url = String.format("https://schema.mau.se/setup/jsp/Schema.jsp?startDatum=2024-03-06&intervallTyp=d&intervallAntal=1&resurser=l.%s", room);
             updateMap(map, room, url);
         }
     }
@@ -86,49 +87,21 @@ public class MAU {
                 LocalTime end = LocalTime.parse(timeTxt.getTextContent().substring(6, 11));
                 logger.info("Start: {} - End: {}", start, end);
 
-                if (start.isBefore(Time.T1015.getTime())) {
-                    setBooked(schedule, room, Time.T0815, String.format("%s - %s", start, end));
+                // if(room.getName().equals("NI:C0301")) {
+                //     System.out.println();
+                // }
 
-                    Time[] times = {Time.T1015, Time.T1315, Time.T1515};
-
-                    for (Time time : times) {
-                        if (end.isAfter(time.getTime())) {
-                            setBooked(schedule, room, time, String.format("%s - %s", start, end));
-                        }
-                    }
-                }
-
-                if (Time.T1015.isBefore(start) && start.isBefore(Time.T1315.getTime())) {
-                    setBooked(schedule, room, Time.T1015, String.format("%s - %s", start, end));
-
-                    Time[] times = {Time.T1315, Time.T1515};
-
-                    for (Time time : times) {
-                        if (end.isAfter(time.getTime())) {
-                            setBooked(schedule, room, time, String.format("%s - %s", start, end));
-                        }
-                    }
-                }
-
-                if (Time.T1315.isBefore(start) && start.isBefore(Time.T1515.getTime())) {
-                    setBooked(schedule, room, Time.T1315, String.format("%s - %s", start, end));
-
-                    if (end.isAfter(Time.T1515.getTime())) {
-                        setBooked(schedule, room, Time.T1515, String.format("%s - %s", start, end));
-                    }
-                }
-
-                if (Time.T1515.isBefore(start) && start.isBefore(Time.T1715.getTime())) {
-                    setBooked(schedule, room, Time.T1515, String.format("%s - %s", start, end));
-                }
-
-                if (end.isAfter(Time.T1715.getTime())) {
-                    setBooked(schedule, room, Time.T1715, String.format("%s - %s", start, end));
+                for(Time time: Time.values()) {
+                    // boolean s = timeSlot.getTime().isAfter(start) || timeSlot.getTime().equals(start);
+                    // boolean e = timeSlot.getTime().isBefore(end) || timeSlot.getTime().equals(end);
+                    // if(s && e) {
+                    //     setBooked(schedule, room, timeSlot, String.format("%s - %s", start, end));
+                    // }
+                    if(time.isInSlot(start, end)) setBooked(schedule, room, time, String.format("%s - %s", start, end));
                 }
             }
         }
     }
-
 
     private HtmlPage getPage(@NotNull WebClient webClient, String url, int thisTry, int maxTries, @NotNull Room room) throws IOException {
         try {

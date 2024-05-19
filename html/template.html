@@ -31,9 +31,10 @@
         <meta name="msapplication-config" content="https://cocacolahomeinspiration.com/icons/browserconfig.xml" />
         <script defer>function setFilterKeys(){localStorage.setItem("filterKeys", JSON.stringify([$filterKeys]))}</script>
         <script src="https://cocacolahomeinspiration.com/sort.js" defer></script>
+        <script src="https://cocacolahomeinspiration.com/date_check.js" defer></script>
     </head>
     <body>
-        <h2>Senast uppdaterad: $datum</h2>
+        <h2 class="tooltip">Senast uppdaterad: $datum<span class="tooltiptext">Out of date</span></h2>
         <div id="buttons" class="flex">
             <button onclick="removeAllDisplayRules()">Reset</button>
 $filterButton
